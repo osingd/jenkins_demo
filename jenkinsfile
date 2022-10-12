@@ -1,0 +1,41 @@
+pipeline {
+    agent { label 'builder1' }
+    stages {
+        stage('clone code from github') {
+            steps {
+                git branch: 'main', credentialsId: 'jenkins_builder', url: 'git@github.com:osingd/Demo1.git'
+            }
+        }
+        stage('Build Backend Tests') {
+            steps {
+                sh ''' mvn test '''
+            }
+        }
+        stage('Build Backend') {
+            steps {
+                sh ''' mvn install '''
+            }
+        }
+        stage('Install dependencies for build Fron-End') {
+            steps {
+                dir('front-end') {
+                    sh ''' npm install '''
+                }
+            }
+        }
+        stage('Fron-End unit tests') {
+            steps {
+                dir('front-end') {
+                    sh ''' npm run unit '''
+                }
+            }
+        }
+        stage('Build Front-End') {
+            steps {
+                dir('front-end') {
+                    sh ''' npm run build '''
+                }
+            }
+        }
+    }
+}
